@@ -1,0 +1,34 @@
+.wishlist-button {
+  &__button {
+    cursor: pointer;
+
+    padding: var(--space-3) var(--space-6);
+    border: 2px solid var(--color-accent);
+    border-radius: var(--radius);
+
+    font-weight: 700;
+    color: var(--color-bg);
+
+    background-color: var(--color-accent);
+
+    transition:
+      background-color 0.15s ease,
+      color 0.15s ease;
+
+    &:hover,
+    &[aria-pressed='true'] {
+      color: var(--color-accent);
+      background-color: transparent;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-text);
+      outline-offset: 2px;
+    }
+
+    &--remove {
+      padding: var(--space-1) var(--space-3);
+      font-size: var(--font-size-sm);
+    }
+  }
+}

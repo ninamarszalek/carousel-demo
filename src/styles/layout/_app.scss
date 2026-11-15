@@ -5,8 +5,33 @@
   flex-direction: column;
   min-height: 100vh;
 
+  &__skip-link {
+    position: absolute;
+    z-index: 10;
+    top: var(--space-2);
+    left: var(--space-2);
+    transform: translateY(-200%);
+
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius);
+
+    color: var(--color-bg);
+
+    background-color: var(--color-accent);
+
+    &:focus {
+      transform: none;
+    }
+  }
+
   &__header {
+    display: flex;
+    gap: var(--space-4);
+    align-items: center;
+    justify-content: space-between;
+
     padding: var(--space-4) var(--space-6);
+
     background-color: var(--color-surface);
   }
 
@@ -14,6 +39,55 @@
     font-size: var(--font-size-lg);
     font-weight: 700;
     color: var(--color-accent);
+    text-decoration: none;
+  }
+
+  &__nav-link {
+    display: inline-flex;
+    gap: var(--space-2);
+    align-items: center;
+
+    color: var(--color-text);
+    text-decoration: none;
+
+    &:hover,
+    &[aria-current='page'] {
+      color: var(--color-accent);
+    }
+  }
+
+  &__badge {
+    min-width: 1.5rem;
+    padding: 0 var(--space-2);
+    border-radius: 999px;
+
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    color: var(--color-bg);
+    text-align: center;
+
+    background-color: var(--color-accent);
+  }
+
+  // A thin bar under the header while the next page is loading.
+  &__progress {
+    transform-origin: left;
+    transform: scaleX(0);
+
+    height: 3px;
+
+    opacity: 0;
+    background-color: var(--color-accent);
+
+    transition:
+      transform 0.6s ease-out,
+      opacity 0.2s ease;
+
+    &[data-active] {
+      transform: scaleX(0.8);
+      opacity: 1;
+      transition-delay: 0.15s;
+    }
   }
 
   &__main {
@@ -27,14 +101,5 @@
     @include up('md') {
       padding: var(--space-8) var(--space-6);
     }
-  }
-
-  &__title {
-    margin-bottom: var(--space-2);
-    font-size: var(--font-size-xl);
-  }
-
-  &__lead {
-    color: var(--color-text-muted);
   }
 }

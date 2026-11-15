@@ -1,0 +1,31 @@
+.home-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+
+  &__title {
+    margin-bottom: var(--space-2);
+    font-size: var(--font-size-xl);
+  }
+
+  &__lead {
+    color: var(--color-text-muted);
+  }
+
+  &__category {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  &__category-title {
+    font-size: var(--font-size-lg);
+  }
+
+  &__error {
+    padding: var(--space-4);
+    border-radius: var(--radius);
+    color: var(--color-text-muted);
+    background-color: var(--color-surface);
+  }
+}

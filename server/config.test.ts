@@ -4,11 +4,33 @@ import { ConfigError, readConfig } from './config';
 
 describe('readConfig', () => {
   it('reads a valid configuration', () => {
-    expect(readConfig({ TMDB_ACCESS_TOKEN: 'token', PORT: '8080' })).toEqual({
+    expect(
+      readConfig({
+        TMDB_ACCESS_TOKEN: 'token',
+        PORT: '8080',
+        TMDB_API_BASE_URL: 'http://localhost:4174/3',
+      }),
+    ).toEqual({
       port: 8080,
       tmdbAccessToken: 'token',
+      tmdbApiBaseUrl: 'http://localhost:4174/3',
     });
   });
+
+  it('defaults the TMDB API base URL to the public API', () => {
+    expect(readConfig({ TMDB_ACCESS_TOKEN: 'token' }).tmdbApiBaseUrl).toBe(
+      'https://api.themoviedb.org/3',
+    );
+  });
+
+  it.each(['not a url', 'ftp://example.com'])(
+    'rejects an invalid TMDB API base URL (%s)',
+    (url) => {
+      expect(() => readConfig({ TMDB_ACCESS_TOKEN: 'token', TMDB_API_BASE_URL: url })).toThrow(
+        /TMDB_API_BASE_URL must be an http\(s\) URL/,
+      );
+    },
+  );
 
   it('defaults the port to 3000', () => {
     expect(readConfig({ TMDB_ACCESS_TOKEN: 'token' }).port).toBe(3000);

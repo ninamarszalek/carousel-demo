@@ -1,0 +1,21 @@
+.film-poster {
+  aspect-ratio: 2 / 3;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius);
+
+  object-fit: cover;
+  background-color: var(--color-surface);
+
+  &--empty {
+    display: grid;
+    place-items: center;
+    padding: var(--space-4);
+  }
+
+  &__fallback-title {
+    font-weight: 700;
+    color: var(--color-text-muted);
+    text-align: center;
+  }
+}

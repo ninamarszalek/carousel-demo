@@ -1,0 +1,31 @@
+.wishlist-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+
+  &__title {
+    font-size: var(--font-size-xl);
+  }
+
+  &__count,
+  &__empty {
+    color: var(--color-text-muted);
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+    gap: var(--space-6);
+
+    padding: 0;
+
+    list-style: none;
+  }
+
+  &__item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    align-items: flex-start;
+  }
+}

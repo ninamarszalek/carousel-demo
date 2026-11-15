@@ -3,7 +3,7 @@
 A web app for browsing films by category, opening film details and building a wish list.
 It is built with React and TypeScript, bundled with Vite, and rendered on the server by a hand-written Express SSR server. No framework is used.
 
-> **Status:** the project setup is done (SSR server, tooling, tests, CI). The features are being added step by step. See [`specs/`](specs/).
+> **Status:** the setup, routing, data loading (TMDB), the film pages and the wish list are done. Next: the interactive carousel and the category themes. See [`specs/`](specs/).
 
 ## Contents
 
@@ -12,6 +12,7 @@ It is built with React and TypeScript, bundled with Vite, and rendered on the se
 - [Running in production mode](#running-in-production-mode)
 - [Testing and quality checks](#testing-and-quality-checks)
 - [Available scripts](#available-scripts)
+- [How pages are rendered](#how-pages-are-rendered)
 - [Project structure](#project-structure)
 - [Troubleshooting](#troubleshooting)
 
@@ -83,7 +84,7 @@ Before the first `test:e2e` run, install the test browser once:
 npx playwright install chromium
 ```
 
-E2E tests run against the **production build**. One of them runs with **JavaScript disabled**, which proves that the content is rendered on the server.
+E2E tests run against the **production build**. TMDB is replaced by a small local mock (`tests/e2e/tmdb-mock-server.ts`), so they need no token or network and always see the same films. Some of them run with **JavaScript disabled**, which proves that the pages are rendered on the server and that the wish list form works as plain HTML.
 
 A git pre-commit hook (Husky + lint-staged) lints and formats staged files automatically.
 
@@ -106,21 +107,34 @@ A git pre-commit hook (Husky + lint-staged) lints and formats staged files autom
 | `npm run test:e2e`      | Builds the app and runs Playwright                  |
 | `npm run check`         | Runs all of the checks above, like CI               |
 
+## How pages are rendered
+
+- **First request** (page load, refresh, bots, no JavaScript): the server runs the route's loader, which calls TMDB through a server-side cache. Then it renders the complete HTML with the right status code (200, 404 or 502) and `<head>` tags, and embeds the loaded data. The browser hydrates from that data and does not fetch it again.
+- **After hydration**: clicking around is client-side navigation. The same loaders run in the browser and fetch JSON from our `/api` endpoints. The browser never talks to TMDB, so the token stays on the server.
+- **Wish list**: stored in a cookie, so the server can render it too. The "Add to wish list" button is a real form: with JavaScript it posts in the background, and without it the server handles the post and redirects back.
+
+Details and the reasons behind each decision: [`specs/data-and-routing.md`](specs/data-and-routing.md).
+
 ## Project structure
 
 ```
-server/           Node-only code: Express app, SSR rendering, API proxy, config
-  dev.ts          dev entry: Vite as middleware
-  prod.ts         production entry (built to dist/server/index.js)
-  app.ts          Express app shared by both modes
-  render.ts       streams the React app into the HTML template
-src/              Code bundled by Vite (runs in the browser, and on the server for SSR)
-  entry-client.tsx  hydrates the server-rendered HTML
-  entry-server.tsx  renders the app to a stream for the server
-  app/            app shell
-  styles/         global SCSS (tokens, base, layout)
-tests/            shared test setup, network mocks (MSW) and e2e tests
-specs/            requirements and specifications
+server/              Node-only code
+  dev.ts / prod.ts   entry points (dev: Vite as middleware; prod: built to dist/server/index.js)
+  app.ts             Express app shared by both modes
+  render.ts          runs the router for a request and streams the page into the HTML template
+  api/router.ts      /api endpoints the browser calls (backend-for-frontend)
+  tmdb/              TMDB client, response mapping and cache
+src/                 Code bundled by Vite (runs in the browser, and on the server for SSR)
+  entry-client.tsx   hydrates the server-rendered HTML
+  entry-server.tsx   runs the router and renders a page on the server
+  app/               routes, layout, header, error page, <head> tags
+  pages/             one folder per page, with its loader
+  features/          films (categories, cards, API client) and wish list (cookie, button, action)
+  lib/               small helpers (image URLs, formatting, HTTP errors)
+  types/             types and contracts shared with the server
+  styles/            global SCSS (tokens, base, layout)
+tests/               shared test setup, TMDB fixtures and mocks, e2e tests
+specs/               requirements and specifications
 ```
 
 The full description of the setup and its rules is in [`specs/project-setup.md`](specs/project-setup.md).

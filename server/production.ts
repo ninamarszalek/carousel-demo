@@ -9,6 +9,7 @@ import { createApp } from './app';
 import { loadEnvFile, readConfig } from './config';
 import { listen } from './lifecycle';
 import type { SsrEntry } from './render';
+import { createFilmsApi } from './tmdb';
 
 interface ProductionPaths {
   /** Output of the client build (`dist/client/`). */
@@ -34,6 +35,7 @@ export async function startProductionServer({
 
   const app = createApp({
     mode: 'production',
+    films: createFilmsApi(config),
     middleware: [compression(), serveStaticAssets(clientPath)],
     renderer: {
       getTemplate: () => Promise.resolve(template),

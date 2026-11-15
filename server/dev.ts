@@ -7,6 +7,7 @@ import { createApp } from './app';
 import { loadEnvFile, readConfig } from './config';
 import { listen, run } from './lifecycle';
 import type { SsrEntry } from './render';
+import { createFilmsApi } from './tmdb';
 
 /** Development server: Vite runs as middleware (HMR, on-the-fly transforms, SSR module loading). */
 run(async () => {
@@ -22,6 +23,7 @@ run(async () => {
 
   const app = createApp({
     mode: 'development',
+    films: createFilmsApi(config),
     middleware: [vite.middlewares],
     renderer: {
       getTemplate: async (url) => {

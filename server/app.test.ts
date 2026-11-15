@@ -3,6 +3,7 @@ import { renderToPipeableStream } from 'react-dom/server';
 import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { createFakeFilmsApi } from '../tests/mocks/fake-films-api';
 import { createApp, type ServerMode } from './app';
 import type { Renderer } from './render';
 
@@ -20,10 +21,19 @@ function createTestApp(
 ) {
   return createApp({
     mode,
+    films: createFakeFilmsApi(),
     renderer: {
       getTemplate: () => Promise.resolve(TEMPLATE),
       loadEntry: () =>
-        Promise.resolve({ render: (_url, options) => renderToPipeableStream(element, options) }),
+        Promise.resolve({
+          handle: () =>
+            Promise.resolve({
+              kind: 'render',
+              statusCode: 200,
+              head: '',
+              render: (options) => renderToPipeableStream(element, options),
+            }),
+        }),
       ...overrides,
     },
   });
@@ -86,6 +96,26 @@ describe('server app', () => {
     expect(response.headers['x-content-type-options']).toBe('nosniff');
     expect(response.headers['content-security-policy']).toContain('img-src');
     expect(response.headers['x-powered-by']).toBeUndefined();
+  });
+
+  it('serves the film API', async () => {
+    const response = await request(createTestApp(null)).get('/api/films/603');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({ title: 'The Matrix' });
+  });
+
+  it("allows only inline scripts with this request's nonce", async () => {
+    const app = createTestApp(createElement('p', null, 'Hello'));
+
+    const first = await request(app).get('/');
+    const second = await request(app).get('/');
+
+    const nonceOf = (csp: string | undefined) => /'nonce-([^']+)'/.exec(csp ?? '')?.[1];
+    const firstNonce = nonceOf(first.headers['content-security-policy']);
+    expect(first.headers['content-security-policy']).toMatch(/script-src 'self' 'nonce-[^']+'/);
+    expect(firstNonce).toBeDefined();
+    expect(firstNonce).not.toBe(nonceOf(second.headers['content-security-policy']));
   });
 
   it('disables the Content Security Policy in development (Vite injects inline scripts)', async () => {

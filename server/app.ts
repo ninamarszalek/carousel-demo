@@ -1,31 +1,36 @@
 import express, { type ErrorRequestHandler, type Express, type RequestHandler } from 'express';
 import helmet from 'helmet';
 
+import type { FilmsApi } from '@/types/films-api';
+
 import { createApiRouter } from './api/router';
-import { createRenderHandler, type Renderer } from './render';
+import { CONTENT_SECURITY_POLICY, cspNonce } from './csp';
+import { createRenderHandler, type RenderOptions, type Renderer } from './render';
 
 export type ServerMode = 'development' | 'production';
 
 export interface AppOptions {
   mode: ServerMode;
   renderer: Renderer;
+  /** Server-side data access (TMDB), shared by the `/api` routes and SSR. */
+  films: FilmsApi;
+  /** Page rendering options; `films` comes from above. Tests use it to shorten the timeout. */
+  renderOptions?: Omit<RenderOptions, 'films'>;
   /** Mode-specific middleware that runs before SSR: Vite dev middleware, or compression + static assets. */
   middleware?: readonly RequestHandler[];
 }
 
-/** Content Security Policy for production. Dev is excluded because Vite injects inline scripts for HMR. */
-const CONTENT_SECURITY_POLICY = {
-  directives: {
-    'img-src': ["'self'", 'data:', 'https://image.tmdb.org'],
-    // HTTPS is the job of the reverse proxy; upgrading requests would break plain-HTTP runs on a LAN IP.
-    'upgrade-insecure-requests': null,
-  },
-};
-
-export function createApp({ mode, renderer, middleware = [] }: AppOptions): Express {
+export function createApp({
+  mode,
+  renderer,
+  films,
+  renderOptions = {},
+  middleware = [],
+}: AppOptions): Express {
   const app = express();
 
   app.disable('x-powered-by');
+  app.use(cspNonce);
   app.use(
     helmet({
       contentSecurityPolicy: mode === 'production' ? CONTENT_SECURITY_POLICY : false,
@@ -35,13 +40,13 @@ export function createApp({ mode, renderer, middleware = [] }: AppOptions): Expr
   app.get('/healthz', (_req, res) => {
     res.json({ status: 'ok' });
   });
-  app.use('/api', createApiRouter());
+  app.use('/api', createApiRouter(films));
 
   for (const handler of middleware) {
     app.use(handler);
   }
 
-  app.use(createRenderHandler(renderer));
+  app.use(createRenderHandler(renderer, { ...renderOptions, films }));
   app.use(errorHandler);
 
   return app;
