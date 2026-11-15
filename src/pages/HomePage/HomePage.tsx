@@ -1,8 +1,13 @@
-import { memo, Suspense, useCallback, useRef, useState } from 'react';
+import { memo, Suspense, useCallback, useRef, useState, type ReactNode } from 'react';
 import { Await, Link, useLoaderData, useSearchParams } from 'react-router';
 
 import { CarouselSkeleton, parseIndexParam } from '@/components/Carousel';
-import { gradientStep, type Category, type CategorySlug } from '@/features/films/categories';
+import {
+  gradientStep,
+  isCategorySlug,
+  type Category,
+  type CategorySlug,
+} from '@/features/films/categories';
 import { FilmCarousel } from '@/features/films/components/FilmCarousel';
 import type { FilmSummary } from '@/types/film';
 
@@ -10,6 +15,12 @@ import type { CategoryRow, HomeData } from './home-loader';
 import { useMostVisible } from './use-most-visible';
 
 import './_home-page.scss';
+
+/**
+ * Until a row's films arrive, any index from the URL is accepted: the carousel wraps it into
+ * range when it mounts.
+ */
+const UNKNOWN_COUNT = Number.POSITIVE_INFINITY;
 
 /**
  * One screen-high panel per category, with its carousel docked to the bottom. Scrolling snaps
@@ -25,18 +36,19 @@ export function HomePage() {
   // indexes, so the glow matches after hydration.
   const [activeIndexes, setActiveIndexes] = useState<Partial<Record<CategorySlug, number>>>(() =>
     Object.fromEntries(
-      rows.map(({ category, films }) => [
-        category.slug,
+      rows.map((row) => [
+        row.category.slug,
         parseIndexParam(
-          searchParams.get(category.slug),
-          Array.isArray(films) ? films.length : Number.MAX_SAFE_INTEGER,
+          searchParams.get(row.category.slug),
+          row.status === 'loaded' ? row.films.length : UNKNOWN_COUNT,
         ),
       ]),
     ),
   );
 
   // `null` until measured (server, hydration): then every panel renders in its resting state.
-  const onScreen = useMostVisible(containerRef, '[data-key]') as CategorySlug | null;
+  const mostVisible = useMostVisible(containerRef, '[data-key]');
+  const onScreen = isCategorySlug(mostVisible) ? mostVisible : null;
   const glowCategory = onScreen ?? rows[0]?.category.slug;
   const glowIndex = glowCategory === undefined ? 0 : (activeIndexes[glowCategory] ?? 0);
 
@@ -79,6 +91,16 @@ interface CategoryPanelProps {
   onActiveIndexChange: (slug: CategorySlug, index: number) => void;
 }
 
+type PanelState = 'active' | 'inactive';
+
+/** No state before the page knows what is on screen: then every panel is shown as it is. */
+function panelState(onScreen: CategorySlug | null, slug: CategorySlug): PanelState | undefined {
+  if (onScreen === null) {
+    return undefined;
+  }
+  return onScreen === slug ? 'active' : 'inactive';
+}
+
 const CategoryPanel = memo(function CategoryPanel({
   row,
   activeIndex,
@@ -86,7 +108,7 @@ const CategoryPanel = memo(function CategoryPanel({
   priority,
   onActiveIndexChange,
 }: CategoryPanelProps) {
-  const { category, films } = row;
+  const { category } = row;
   const headingId = `category-${category.slug}`;
   const [searchParams] = useSearchParams();
 
@@ -96,9 +118,9 @@ const CategoryPanel = memo(function CategoryPanel({
     return `?${params.toString()}`;
   };
 
-  const renderCarousel = (loaded: FilmSummary[]) => (
+  const renderCarousel = (films: FilmSummary[]) => (
     <FilmCarousel
-      films={loaded}
+      films={films}
       category={category}
       labelledBy={headingId}
       // Read once, when the carousel mounts.
@@ -111,15 +133,13 @@ const CategoryPanel = memo(function CategoryPanel({
     />
   );
 
-  const state = onScreen === null ? undefined : onScreen === category.slug ? 'active' : 'inactive';
-
   return (
     <div
       className="home-page__panel"
       data-key={category.slug}
       data-category={category.slug}
       data-gradient-step={gradientStep(activeIndex)}
-      data-state={state}
+      data-state={panelState(onScreen, category.slug)}
       data-testid={`category-panel-${category.slug}`}
     >
       {/* This panel's own light, used on portrait screens (see _home-page.scss). */}
@@ -128,26 +148,40 @@ const CategoryPanel = memo(function CategoryPanel({
         <h2 className="home-page__panel-title" id={headingId}>
           {category.label}
         </h2>
-        {films === null ? (
-          <CategoryError category={category} />
-        ) : Array.isArray(films) ? (
-          // Loaded (always on the server): render straight away. Going through <Await> here
-          // would suspend for a moment even with ready data, and the server would stream a
-          // skeleton first.
-          renderCarousel(films)
-        ) : (
-          <Suspense
-            fallback={<CarouselSkeleton label={`Loading ${category.label.toLowerCase()} films`} />}
-          >
-            <Await resolve={films} errorElement={<CategoryError category={category} />}>
-              {renderCarousel}
-            </Await>
-          </Suspense>
-        )}
+        <CategoryFilms row={row} renderCarousel={renderCarousel} />
       </div>
     </div>
   );
 });
+
+interface CategoryFilmsProps {
+  row: CategoryRow;
+  renderCarousel: (films: FilmSummary[]) => ReactNode;
+}
+
+/** The row's carousel, skeleton or error, by how far its loading got. */
+function CategoryFilms({ row, renderCarousel }: CategoryFilmsProps) {
+  const { category } = row;
+
+  switch (row.status) {
+    case 'failed':
+      return <CategoryError category={category} />;
+    case 'loaded':
+      // Always the case on the server: render straight away. Going through <Await> here would
+      // suspend for a moment even with ready data, and the server would stream a skeleton first.
+      return renderCarousel(row.films);
+    case 'pending':
+      return (
+        <Suspense
+          fallback={<CarouselSkeleton label={`Loading ${category.label.toLowerCase()} films`} />}
+        >
+          <Await resolve={row.films} errorElement={<CategoryError category={category} />}>
+            {renderCarousel}
+          </Await>
+        </Suspense>
+      );
+  }
+}
 
 function CategoryError({ category }: { category: Category }) {
   return (

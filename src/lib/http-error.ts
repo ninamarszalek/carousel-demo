@@ -12,13 +12,18 @@ export function httpError(status: number, message: string): never {
   throw data(message, { status });
 }
 
+/** The 502 page: the film service (TMDB, or our `/api`) could not answer. */
+export function badGateway(): never {
+  httpError(502, "Couldn't load films. Please try again in a moment.");
+}
+
 /** Runs `load`; a film service failure becomes a 502 page, anything else is rethrown as a bug. */
 export async function orBadGateway<T>(load: () => Promise<T>): Promise<T> {
   try {
     return await load();
   } catch (error) {
     if (error instanceof FilmServiceError) {
-      httpError(502, "Couldn't load films. Please try again in a moment.");
+      badGateway();
     }
     throw error;
   }

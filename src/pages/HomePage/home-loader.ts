@@ -1,19 +1,18 @@
 import type { LoaderFunction } from 'react-router';
 
 import { CATEGORIES, type Category } from '@/features/films/categories';
-import { httpError } from '@/lib/http-error';
+import { badGateway } from '@/lib/http-error';
 import type { FilmSummary } from '@/types/film';
 import { FilmServiceError, type FilmsApi } from '@/types/films-api';
 
-export interface CategoryRow {
-  category: Category;
-  /**
-   * - an array: loaded (always the case on the server),
-   * - a promise: still loading (browser); the page shows a skeleton until it settles,
-   * - `null`: loading failed on the server; the page shows an inline error.
-   */
-  films: FilmSummary[] | Promise<FilmSummary[]> | null;
-}
+/** A homepage carousel: its category and its films, as far as they have been loaded. */
+export type CategoryRow =
+  /** Loaded: always the case on the server, so the HTML and the hydration data are complete. */
+  | { category: Category; status: 'loaded'; films: FilmSummary[] }
+  /** Still loading (browser only): the page shows a skeleton until the promise settles. */
+  | { category: Category; status: 'pending'; films: Promise<FilmSummary[]> }
+  /** Loading failed on the server: the page shows an inline error in this row. */
+  | { category: Category; status: 'failed' };
 
 export interface HomeData {
   rows: CategoryRow[];
@@ -36,11 +35,11 @@ export function createHomeLoader(
     if (deferData) {
       return {
         rows: CATEGORIES.map((category) => {
-          const request_ = films.getFilmsByGenre(category.genreId, request.signal);
+          const pendingFilms = films.getFilmsByGenre(category.genreId, request.signal);
           // <Await> handles the rejection; this only stops an "unhandled rejection" report when
           // the user navigates away before the row is rendered.
-          request_.catch(() => undefined);
-          return { category, films: request_ };
+          pendingFilms.catch(() => undefined);
+          return { category, status: 'pending', films: pendingFilms };
         }),
       };
     }
@@ -50,18 +49,19 @@ export function createHomeLoader(
     const rows = await Promise.all(
       CATEGORIES.map(async (category): Promise<CategoryRow> => {
         try {
-          return { category, films: await films.getFilmsByGenre(category.genreId, request.signal) };
+          const loaded = await films.getFilmsByGenre(category.genreId, request.signal);
+          return { category, status: 'loaded', films: loaded };
         } catch (error) {
           if (!(error instanceof FilmServiceError)) {
             throw error;
           }
-          return { category, films: null };
+          return { category, status: 'failed' };
         }
       }),
     );
 
-    if (rows.every((row) => row.films === null)) {
-      httpError(502, "Couldn't load films. Please try again in a moment.");
+    if (rows.every((row) => row.status === 'failed')) {
+      badGateway();
     }
     return { rows };
   };

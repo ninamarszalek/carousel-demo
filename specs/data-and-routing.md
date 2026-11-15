@@ -89,8 +89,9 @@ Defined once in `src/app/routes.tsx` as `createRoutes(deps: RouteDeps): RouteObj
 
 ```ts
 type CategoryRow =
-  | { category: Category; status: 'ok'; films: FilmSummary[] }
-  | { category: Category; status: 'error' };
+  | { category: Category; status: 'loaded'; films: FilmSummary[] }
+  | { category: Category; status: 'pending'; films: Promise<FilmSummary[]> } // browser only
+  | { category: Category; status: 'failed' };
 ```
 
 - The loader loads the 3 categories in parallel. **One failing category does not break the page**: its carousel shows an inline error with a "Try again" link to `/` (a navigation to the same URL runs the loaders again; without JavaScript it reloads the page).
