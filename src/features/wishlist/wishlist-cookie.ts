@@ -1,5 +1,5 @@
 import { isCategorySlug, type CategorySlug } from '@/features/films/categories';
-import { parseId } from '@/types/films-api';
+import { MAX_FILMS_PER_REQUEST, parseId } from '@/types/films-api';
 
 export interface WishlistItem {
   filmId: number;
@@ -8,7 +8,8 @@ export interface WishlistItem {
 }
 
 export const WISHLIST_COOKIE = 'wishlist';
-export const MAX_WISHLIST_ITEMS = 50;
+// The wish list page loads all its films in one `getFilms()` call, so the list can never hold more.
+export const MAX_WISHLIST_ITEMS = MAX_FILMS_PER_REQUEST;
 const ONE_YEAR_IN_SECONDS = 60 * 60 * 24 * 365;
 
 /**

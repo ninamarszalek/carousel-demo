@@ -10,8 +10,8 @@ import {
 import { circularOffset, restingPosition } from './carousel-math';
 import { chainOrder, stepChain, type CardMotion } from './spring';
 
-/** Before CSS has been read: the widest layout, as rendered on the server. */
-const DEFAULT_SIDE_COUNT = 3;
+/** Before CSS has been read: the widest layout, as rendered on the server (and by the skeleton). */
+export const DEFAULT_SIDE_COUNT = 3;
 const DEFAULT_GAP_ANGLE = 12;
 
 const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';

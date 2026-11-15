@@ -1,4 +1,5 @@
 import { slideStyle } from './carousel-math';
+import { DEFAULT_SIDE_COUNT } from './use-arc-motion';
 
 import './_carousel.scss';
 
@@ -8,7 +9,10 @@ interface CarouselSkeletonProps {
 }
 
 /** As many placeholders as the widest layout shows; CSS hides the extra ones on small screens. */
-const PLACEHOLDER_OFFSETS = [-3, -2, -1, 0, 1, 2, 3];
+const PLACEHOLDER_OFFSETS = Array.from(
+  { length: 2 * DEFAULT_SIDE_COUNT + 1 },
+  (_, index) => index - DEFAULT_SIDE_COUNT,
+);
 
 /**
  * A placeholder with the same geometry as `Carousel` (same card positions), shown

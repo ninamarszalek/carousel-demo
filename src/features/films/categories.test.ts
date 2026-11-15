@@ -1,6 +1,16 @@
+import path from 'node:path';
+
+import { compile } from 'sass-embedded';
 import { describe, expect, it } from 'vitest';
 
-import { filmPath, getCategory, isCategorySlug, resolveCategory } from './categories';
+import {
+  filmPath,
+  getCategory,
+  GRADIENT_STEPS,
+  gradientStep,
+  isCategorySlug,
+  resolveCategory,
+} from './categories';
 
 describe('resolveCategory', () => {
   it('uses a valid category from the URL, even if the film has other genres', () => {
@@ -16,6 +26,25 @@ describe('resolveCategory', () => {
   it('is null when nothing matches (default look)', () => {
     expect(resolveCategory(null, [18])).toBeNull();
     expect(resolveCategory('', [])).toBeNull();
+  });
+});
+
+describe('gradientStep', () => {
+  it('cycles through the steps as the carousel moves on', () => {
+    expect([0, 1, 2, 3, 4, 5].map(gradientStep)).toStrictEqual([0, 1, 2, 3, 0, 1]);
+  });
+
+  it('has as many steps as the theme stylesheet defines', () => {
+    // Relative to the project root: jsdom gives `import.meta.url` an http scheme.
+    const stylesheet = path.join(process.cwd(), 'src/styles/themes/_categories.scss');
+    const { css } = compile(stylesheet);
+    const steps = new Set(
+      [...css.matchAll(/\[data-gradient-step="(\d+)"\]/g)].map(([, step]) => Number(step)),
+    );
+
+    // Step 0 is every theme's base look; the stylesheet has one rule per further step.
+    const expected = Array.from({ length: GRADIENT_STEPS - 1 }, (_, index) => index + 1);
+    expect([...steps].toSorted((a, b) => a - b)).toStrictEqual(expected);
   });
 });
 

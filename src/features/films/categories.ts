@@ -8,10 +8,11 @@ export interface Category {
 }
 
 /**
- * The number of steps in each category's background gradient. Keep in sync with the length of
- * `$blob-layouts` in src/styles/themes/_categories.scss, where the steps are defined.
+ * The number of steps in each category's background gradient. It must match the length of
+ * `$blob-layouts` in src/styles/themes/_categories.scss, where the steps are defined;
+ * categories.test.ts compiles the stylesheet and checks that.
  */
-const GRADIENT_STEPS = 4;
+export const GRADIENT_STEPS = 4;
 
 /** The gradient step shown while the film at `activeIndex` is in front. */
 export function gradientStep(activeIndex: number): number {
