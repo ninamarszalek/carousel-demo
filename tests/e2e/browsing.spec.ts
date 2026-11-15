@@ -59,6 +59,27 @@ test.describe('browsing films', () => {
   });
 });
 
+test.describe('category themes', () => {
+  // Each category restyles the film page through its own font and button (FR-CAT-1, FR-CAT-2).
+  const themes = [
+    { path: '/film/603?category=action', font: /Oswald/, radius: '0px', transform: 'uppercase' },
+    { path: '/film/187017?category=comedy', font: /Fredoka/, radius: '999px', transform: 'none' },
+    { path: '/film/419430?category=horror', font: /Cinzel/, radius: '2px', transform: 'uppercase' },
+  ];
+
+  for (const { path, font, radius, transform } of themes) {
+    test(`${path} has its own font and button`, async ({ page }) => {
+      await page.goto(path);
+
+      await expect(page.getByRole('heading', { level: 1 })).toHaveCSS('font-family', font);
+      const button = page.getByRole('button', { name: 'Add to wish list' });
+      await expect(button).toHaveCSS('font-family', font);
+      await expect(button).toHaveCSS('border-radius', radius);
+      await expect(button).toHaveCSS('text-transform', transform);
+    });
+  }
+});
+
 test.describe('wish list', () => {
   test('adds a film, lists it, and removes it again', async ({ page }) => {
     await page.goto('/film/603?category=action');
