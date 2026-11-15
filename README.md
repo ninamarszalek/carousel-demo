@@ -111,7 +111,7 @@ A git pre-commit hook (Husky + lint-staged) lints and formats staged files autom
 
 ## How pages are rendered
 
-- **First request** (page load, refresh, bots, no JavaScript): the server runs the route's loader, which calls TMDB through a server-side cache. Then it renders the complete HTML with the right status code (200, 404 or 502) and `<head>` tags, and embeds the loaded data. The browser hydrates from that data and does not fetch it again.
+- **First request** (page load, refresh, bots, no JavaScript): the server runs the route's loader, which calls TMDB through a server-side cache. Then it renders the complete HTML with the right status code (200, 404 or 502) and `<head>` tags, and embeds the loaded data. The browser hydrates from that data and does not fetch it again. The HTML is streamed with React's `renderToPipeableStream`, but since the loaders wait for all data, the stream is complete when it starts. The server still tells users (response starts when the shell is ready) from bots (response starts when everything is ready), so a future `Suspense` boundary, for example a lazily loaded section, would stream in for users and stay complete for crawlers.
 - **After hydration**: clicking around is client-side navigation. The same loaders run in the browser and fetch JSON from our `/api` endpoints. The browser never talks to TMDB, so the token stays on the server.
 - **Wish list**: stored in a cookie, so the server can render it too. The "Add to wish list" button is a real form: with JavaScript it posts in the background, and without it the server handles the post and redirects back.
 
