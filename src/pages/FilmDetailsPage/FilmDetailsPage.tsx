@@ -1,11 +1,11 @@
 import { useLoaderData } from 'react-router';
 
 import { FilmPoster } from '@/features/films/components/FilmPoster';
+import { TmdbImage } from '@/features/films/components/TmdbImage';
 import { filmFacts } from '@/features/films/film-facts';
 import { WishlistButton } from '@/features/wishlist/components/WishlistButton';
 import { useWishlist } from '@/features/wishlist/use-wishlist';
 import { hasItem } from '@/features/wishlist/wishlist-cookie';
-import { tmdbImage } from '@/lib/tmdb-image';
 import type { FilmDetails } from '@/types/film';
 
 import type { FilmPageData } from './film-loader';
@@ -57,17 +57,16 @@ function FilmImage({ film }: { film: FilmDetails }) {
     );
   }
 
-  const { src, srcSet } = tmdbImage(film.backdropPath, 'backdrop');
   return (
-    <img
+    <TmdbImage
       className="film-page__backdrop"
-      src={src}
-      srcSet={srcSet}
-      sizes="(width >= 48rem) 60vw, 100vw"
+      path={film.backdropPath}
+      kind="backdrop"
       alt={`Still from ${film.title}`}
+      sizes="(width >= 48rem) 60vw, 100vw"
       width={1280}
       height={720}
-      fetchPriority="high"
+      priority
     />
   );
 }

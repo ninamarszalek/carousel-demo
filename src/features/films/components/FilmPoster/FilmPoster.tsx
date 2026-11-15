@@ -1,4 +1,4 @@
-import { tmdbImage } from '@/lib/tmdb-image';
+import { TmdbImage } from '../TmdbImage';
 
 import './_film-poster.scss';
 
@@ -27,18 +27,16 @@ export function FilmPoster({ path, title, sizes, priority = false }: FilmPosterP
     );
   }
 
-  const { src, srcSet } = tmdbImage(path, 'poster');
   return (
-    <img
+    <TmdbImage
       className="film-poster"
-      src={src}
-      srcSet={srcSet}
-      sizes={sizes}
+      path={path}
+      kind="poster"
       alt={`Poster of ${title}`}
+      sizes={sizes}
       width={500}
       height={750}
-      loading={priority ? 'eager' : 'lazy'}
-      decoding="async"
+      priority={priority}
     />
   );
 }

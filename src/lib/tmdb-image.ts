@@ -14,20 +14,25 @@ export interface TmdbImageSources {
   srcSet: string;
 }
 
+const FALLBACK_WIDTH = 500;
+
+function imageUrl(path: string, width: number): string {
+  return `${IMAGE_BASE_URL}/w${String(width)}${path}`;
+}
+
 /** `src` (a mid-size fallback) and `srcSet` for a TMDB image path such as `/abc.jpg`. */
 export function tmdbImage(path: string, kind: TmdbImageKind): TmdbImageSources {
   const widths: readonly number[] = WIDTHS[kind];
-  const url = (width: number) => `${IMAGE_BASE_URL}/w${String(width)}${path}`;
-  const fallbackWidth = widths[Math.floor((widths.length - 1) / 2)] ?? widths[0] ?? 500;
+  const fallbackWidth = widths[Math.floor((widths.length - 1) / 2)] ?? FALLBACK_WIDTH;
 
   return {
-    src: url(fallbackWidth),
-    srcSet: widths.map((width) => `${url(width)} ${String(width)}w`).join(', '),
+    src: imageUrl(path, fallbackWidth),
+    srcSet: widths.map((width) => `${imageUrl(path, width)} ${String(width)}w`).join(', '),
   };
 }
 
 /** The largest variant, for Open Graph previews. */
 export function tmdbImageUrl(path: string, kind: TmdbImageKind): string {
   const widths: readonly number[] = WIDTHS[kind];
-  return `${IMAGE_BASE_URL}/w${String(widths.at(-1) ?? 500)}${path}`;
+  return imageUrl(path, widths.at(-1) ?? FALLBACK_WIDTH);
 }

@@ -1,0 +1,1 @@
+export { TmdbImage } from './TmdbImage';
