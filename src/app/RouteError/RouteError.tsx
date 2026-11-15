@@ -13,7 +13,7 @@ export function RouteError() {
   const notFound = status === 404;
 
   return (
-    <section className="route-error" aria-labelledby="route-error-title">
+    <section className="route-error container" aria-labelledby="route-error-title">
       <DocumentTitle errorStatus={status} />
       <h1 className="route-error__title" id="route-error-title">
         {notFound ? 'Page not found' : 'Something went wrong'}

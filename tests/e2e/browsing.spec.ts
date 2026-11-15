@@ -5,11 +5,12 @@ test.describe('browsing films', () => {
     await page.goto('/');
 
     await expect(page).toHaveTitle('Film Browser');
-    await expect(page.getByRole('heading', { level: 1, name: 'Browse films' })).toBeVisible();
+    // The page title is for screen readers only; the panels speak for themselves.
+    await expect(page.getByRole('heading', { level: 1, name: 'Browse films' })).toBeAttached();
     for (const category of ['Action', 'Comedy', 'Horror']) {
       await expect(page.getByRole('heading', { level: 2, name: category })).toBeVisible();
     }
-    await expect(page.getByRole('list', { name: 'Horror' }).getByRole('listitem')).toHaveCount(3);
+    await expect(page.getByRole('region', { name: 'Horror' }).getByRole('group')).toHaveCount(3);
   });
 
   test('a film opens in the category of the carousel it was clicked in', async ({ page }) => {
@@ -18,7 +19,7 @@ test.describe('browsing films', () => {
 
     // 22 Jump Street is both Action and Comedy.
     await page
-      .getByRole('list', { name: 'Comedy' })
+      .getByRole('region', { name: 'Comedy' })
       .getByRole('link', { name: /22 Jump Street/ })
       .click();
 

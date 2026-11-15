@@ -16,7 +16,11 @@ if (!container) {
 // `document.cookie` for the wish list. The router picks up the server's loader data from
 // `window.__staticRouterHydrationData`, so nothing is fetched again on hydration.
 const router = createBrowserRouter(
-  createRoutes({ films: createHttpFilmsApi(), wishlist: createBrowserWishlistStorage() }),
+  createRoutes({
+    films: createHttpFilmsApi(),
+    wishlist: createBrowserWishlistStorage(),
+    deferData: true,
+  }),
 );
 
 const app = (

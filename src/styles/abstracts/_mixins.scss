@@ -1,3 +1,58 @@
+@use 'breakpoints' as *;
+
+// The category glow: soft, half-transparent light rising from the bottom edge, on a white page.
+// All inputs are custom properties registered with @property (themes/_categories.scss), so a
+// change of category or of `data-gradient-step` makes the light flow instead of jumping.
+// `$blob-y` puts every blob at the same height (e.g. behind the cards in a panel) instead of at
+// the bottom edge.
+@mixin category-glow($blob-y: null) {
+  background:
+    radial-gradient(
+      55% 60% at var(--blob-1-x) #{$blob-y or var(--blob-1-y)},
+      rgb(from var(--gradient-1) r g b / 65%) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      45% 50% at var(--blob-2-x) #{$blob-y or var(--blob-2-y)},
+      rgb(from var(--gradient-2) r g b / 55%) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      80% 45% at var(--blob-3-x) #{$blob-y or var(--blob-3-y)},
+      rgb(from var(--gradient-3) r g b / 60%) 0%,
+      transparent 75%
+    );
+  transition:
+    --gradient-1 0.55s ease,
+    --gradient-2 0.55s ease,
+    --gradient-3 0.55s ease,
+    --blob-1-x 0.55s ease,
+    --blob-1-y 0.55s ease,
+    --blob-2-x 0.55s ease,
+    --blob-2-y 0.55s ease,
+    --blob-3-x 0.55s ease,
+    --blob-3-y 0.55s ease;
+}
+
+// The category's display font (themes/_categories.scss).
+@mixin display-type {
+  font-family: var(--theme-font-display);
+  font-weight: var(--theme-display-weight);
+  text-transform: var(--theme-display-transform);
+  letter-spacing: var(--theme-display-tracking);
+}
+
+@mixin display-title {
+  @include display-type;
+
+  font-size: var(--font-size-xl);
+  line-height: 1.05;
+
+  @include up('md') {
+    font-size: var(--font-size-xxl);
+  }
+}
+
 // Hides content visually but keeps it available to screen readers.
 @mixin visually-hidden {
   position: absolute;

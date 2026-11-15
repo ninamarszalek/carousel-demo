@@ -19,7 +19,9 @@ const handlers = new WeakMap<FilmsApi, StaticHandler>();
 function getHandler(films: FilmsApi): StaticHandler {
   let handler = handlers.get(films);
   if (!handler) {
-    handler = createStaticHandler(createRoutes({ films, wishlist: createServerWishlistStorage() }));
+    handler = createStaticHandler(
+      createRoutes({ films, wishlist: createServerWishlistStorage(), deferData: false }),
+    );
     handlers.set(films, handler);
   }
   return handler;

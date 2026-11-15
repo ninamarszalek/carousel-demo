@@ -1,0 +1,33 @@
+@use '../../../../styles/abstracts' as *;
+
+.film-carousel {
+  &__index {
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--theme-accent);
+    letter-spacing: 0.25em;
+  }
+
+  &__title {
+    @include display-title;
+
+    text-wrap: balance;
+  }
+
+  &__meta {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+
+  &__empty {
+    margin-inline: var(--space-4);
+    padding: var(--space-4);
+    border-radius: var(--radius);
+
+    color: var(--color-text-muted);
+    text-align: center;
+
+    background-color: var(--color-surface);
+  }
+}

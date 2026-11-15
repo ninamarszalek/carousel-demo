@@ -7,6 +7,17 @@ export interface Category {
   genreId: number;
 }
 
+/**
+ * The number of steps in each category's background gradient. Keep in sync with the length of
+ * `$blob-layouts` in src/styles/themes/_categories.scss, where the steps are defined.
+ */
+const GRADIENT_STEPS = 4;
+
+/** The gradient step shown while the film at `activeIndex` is in front. */
+export function gradientStep(activeIndex: number): number {
+  return activeIndex % GRADIENT_STEPS;
+}
+
 /** The homepage carousels, in display order. The order also decides `resolveCategory()` ties. */
 export const CATEGORIES: readonly Category[] = [
   { slug: 'action', label: 'Action', genreId: 28 },

@@ -1,7 +1,16 @@
 // Global stylesheet entry, linked from index.html.
-// Order matters: base → layout. Abstracts are @use'd by the partials that need them.
-// Component styles live next to their components.
+// Order matters: fonts → base → themes → layout. Abstracts are @use'd by the partials that need
+// them. Component styles live next to their components.
+
+// Self-hosted fonts (bundled and hashed by Vite, so nothing loads from a third party at runtime):
+// the UI font and one display font per category (FR-CAT-1).
+@use '@fontsource-variable/inter' as font-inter;
+@use '@fontsource/oswald/latin-700' as font-oswald;
+@use '@fontsource/fredoka/latin-600' as font-fredoka;
+@use '@fontsource/cinzel/latin-700' as font-cinzel;
 @use 'base/root';
 @use 'base/reset';
 @use 'base/typography';
+@use 'base/utilities';
+@use 'themes/categories';
 @use 'layout/app';

@@ -3,7 +3,7 @@
 A web app for browsing films by category, opening film details and building a wish list.
 It is built with React and TypeScript, bundled with Vite, and rendered on the server by a hand-written Express SSR server. No framework is used.
 
-> **Status:** the setup, routing, data loading (TMDB), the film pages and the wish list are done. Next: the interactive carousel and the category themes. See [`specs/`](specs/).
+> **Status:** all features are done: routing and SSR data loading (TMDB), the arc carousels, the film pages with category themes, and the wish list. See [`specs/`](specs/).
 
 ## Contents
 
@@ -132,7 +132,7 @@ src/                 Code bundled by Vite (runs in the browser, and on the serve
   features/          films (categories, cards, API client) and wish list (cookie, button, action)
   lib/               small helpers (image URLs, formatting, HTTP errors)
   types/             types and contracts shared with the server
-  styles/            global SCSS (tokens, base, layout)
+  styles/            global SCSS (tokens, base, category themes, layout)
 tests/               shared test setup, TMDB fixtures and mocks, e2e tests
 specs/               requirements and specifications
 ```

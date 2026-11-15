@@ -8,16 +8,17 @@ test.describe('without JavaScript', () => {
   test('the homepage is fully rendered', async ({ page }) => {
     await page.goto('/');
 
-    await expect(page.getByRole('heading', { level: 1, name: 'Browse films' })).toBeVisible();
-    await expect(page.getByRole('list', { name: 'Action' })).toContainText('The Matrix');
-    await expect(page.getByRole('list', { name: 'Horror' })).toContainText('The Shining');
+    // The page title is for screen readers only; the panels speak for themselves.
+    await expect(page.getByRole('heading', { level: 1, name: 'Browse films' })).toBeAttached();
+    await expect(page.getByRole('region', { name: 'Action' })).toContainText('The Matrix');
+    await expect(page.getByRole('region', { name: 'Horror' })).toContainText('The Shining');
   });
 
   test('links navigate to a fully rendered film page', async ({ page }) => {
     await page.goto('/');
 
     await page
-      .getByRole('list', { name: 'Horror' })
+      .getByRole('region', { name: 'Horror' })
       .getByRole('link', { name: /Get Out/ })
       .click();
 

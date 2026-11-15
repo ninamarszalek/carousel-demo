@@ -12,7 +12,7 @@ export function WishlistPage() {
   const { entries } = useLoaderData<WishlistPageData>();
 
   return (
-    <section className="wishlist-page" aria-labelledby="wishlist-title">
+    <section className="wishlist-page container" aria-labelledby="wishlist-title">
       <header className="wishlist-page__header">
         <h1 className="wishlist-page__title" id="wishlist-title">
           Your wish list

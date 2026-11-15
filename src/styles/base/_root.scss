@@ -15,7 +15,9 @@
 
   --font-family-base: #{$font-family-base};
   --radius: #{$radius};
+  --shadow-poster: #{$shadow-poster};
   --content-max-width: #{$content-max-width};
+  --header-height: #{$header-height};
 
-  color-scheme: dark;
+  color-scheme: light;
 }

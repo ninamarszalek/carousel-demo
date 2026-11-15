@@ -73,12 +73,35 @@ describe('entry-server handle()', () => {
       const { status, html } = await renderPage('/');
 
       expect(status).toBe(200);
-      expect(html).toContain('<h1 class="home-page__title">Browse films</h1>');
+      expect(html).toContain('<h1 class="visually-hidden">Browse films</h1>');
       for (const label of ['Action', 'Comedy', 'Horror']) {
         expect(html).toContain(`>${label}</h2>`);
       }
       expect(html).toContain('The Matrix');
       expect(html).toContain('href="/film/603?category=action"');
+    });
+
+    it('renders each category as an arc carousel, already in place', async () => {
+      const { html } = await renderPage('/');
+
+      expect(html).toContain('aria-roledescription="carousel" aria-labelledby="category-action"');
+      expect(html).toContain('--offset:0');
+      expect(html).toContain('href="?action=1" aria-label="Next film"');
+      // The server waits for the data, so it never sends the loading skeleton.
+      expect(html).not.toContain('carousel--skeleton');
+    });
+
+    it('opens a carousel at the film named in the URL (the arrows work without JavaScript)', async () => {
+      const { html } = await renderPage('/?horror=1&action=2');
+
+      expect(html).toContain('02 / 03');
+      expect(html).toContain('The Shining');
+      expect(html).toContain('href="?horror=2&amp;action=2" aria-label="Next film"');
+      // The glow shows the first category, at the step of its film, so hydration matches.
+      expect(html).toContain(
+        'class="home-page__glow" aria-hidden="true" data-category="action" data-gradient-step="2"',
+      );
+      expect(html).toContain('data-key="horror" data-category="horror"');
     });
 
     it('serializes the loader data for hydration, with the nonce', async () => {

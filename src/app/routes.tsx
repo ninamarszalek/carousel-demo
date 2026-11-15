@@ -22,13 +22,18 @@ import { RouteError } from './RouteError';
 export interface RouteDeps {
   films: FilmsApi;
   wishlist: WishlistStorage;
+  /**
+   * `false` on the server (loaders wait, so the HTML is complete), `true` in the browser (pages
+   * appear at once and show skeletons while their data loads). See `createHomeLoader`.
+   */
+  deferData: boolean;
 }
 
 /**
  * The single route tree for the server (static handler) and the browser (data router).
  * Loaders and actions get their data sources from `deps`, so they never check where they run.
  */
-export function createRoutes({ films, wishlist }: RouteDeps): RouteObject[] {
+export function createRoutes({ films, wishlist, deferData }: RouteDeps): RouteObject[] {
   const wishlistAction = createWishlistAction(wishlist);
 
   return [
@@ -47,7 +52,7 @@ export function createRoutes({ films, wishlist }: RouteDeps): RouteObject[] {
           element: <PageOutlet />,
           errorElement: <RouteError />,
           children: [
-            { index: true, element: <HomePage />, loader: createHomeLoader(films) },
+            { index: true, element: <HomePage />, loader: createHomeLoader(films, { deferData }) },
             {
               path: 'film/:id',
               element: <FilmDetailsPage />,

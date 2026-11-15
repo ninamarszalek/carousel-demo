@@ -1,0 +1,234 @@
+@use '../../styles/abstracts' as *;
+
+// Arc carousel, docked to the bottom of its container. The geometry lives in custom properties,
+// overridden per breakpoint; the component's JavaScript reads `--carousel-side-count` and
+// `--carousel-gap-angle` from here, so the numbers exist in one place only.
+
+// Every slide stands where the active card stands (`--carousel-drop` above the bottom edge) and
+// is rotated around a pivot far below the stage (`transform-origin`), by `--offset` steps of
+// `--carousel-gap-angle`. So the side cards dip below the edge, as if rising from it. Slides
+// beyond the visible ones wait, invisible, one step past the edge. While the springs run, an
+// inline `--angle` overrides the resting rotation. The card size follows the viewport height, so
+// the carousel fills a screen-high panel on any display.
+.carousel {
+  // The biggest card that fits: by height, the screen minus the header, the caption and the
+  // margins (about 19rem together), divided by the poster ratio; by width, 78% of the screen.
+  --carousel-card-ratio: 1.5;
+  --carousel-card-fit: min(78vw, calc((100svh - 19rem) / var(--carousel-card-ratio)));
+  --carousel-card-width: clamp(10rem, var(--carousel-card-fit), 22rem);
+  --carousel-card-height: calc(var(--carousel-card-width) * var(--carousel-card-ratio));
+  --carousel-radius: calc(var(--carousel-card-width) * 3.4);
+  --carousel-gap-angle: 16deg;
+  --carousel-side-count: 1;
+  --carousel-lift: 2rem;
+  --carousel-drop: 0rem;
+
+  // How much of the stage's bottom fades out, so the cards dissolve into the glow instead of
+  // being cut off by the edge.
+  --carousel-fade: calc(var(--carousel-card-height) * 0.45);
+  --carousel-placeholder: var(--color-surface);
+  --carousel-accent: var(--theme-accent);
+
+  // Its own stacking context: the slides' z-index never reaches above the pinned header.
+  isolation: isolate;
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+
+  @include up('md') {
+    --carousel-card-width: clamp(11rem, var(--carousel-card-fit), 28rem);
+    --carousel-radius: calc(var(--carousel-card-width) * 4.2);
+    --carousel-gap-angle: 12.5deg;
+    --carousel-side-count: 2;
+  }
+
+  @include up('lg') {
+    --carousel-card-width: clamp(12rem, var(--carousel-card-fit), 32rem);
+    --carousel-radius: calc(var(--carousel-card-width) * 4.6);
+    --carousel-gap-angle: 10.5deg;
+    --carousel-side-count: 3;
+  }
+
+  &__label {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    align-items: center;
+
+    min-height: 5rem;
+    padding-inline: var(--space-4);
+
+    text-align: center;
+  }
+
+  // Exactly as tall as the arc needs, so the caption always sits close above the cards.
+  &__stage {
+    touch-action: pan-y;
+
+    position: relative;
+
+    overflow: hidden;
+    flex: none;
+
+    height: calc(var(--carousel-lift) + var(--carousel-card-height) + var(--carousel-drop));
+
+    mask-image: linear-gradient(to bottom, #000 calc(100% - var(--carousel-fade)), transparent);
+  }
+
+  &__track {
+    position: absolute;
+    inset: 0;
+  }
+
+  &__slide {
+    --edge: calc(var(--carousel-side-count) + 1);
+    --position: clamp(calc(-1 * var(--edge)), var(--offset), var(--edge));
+
+    will-change: transform;
+
+    position: absolute;
+    bottom: var(--carousel-drop);
+    left: calc(50% - var(--carousel-card-width) / 2);
+    transform-origin: 50% calc(var(--carousel-card-height) / 2 + var(--carousel-radius));
+    transform: rotate(var(--angle, calc(var(--position) * var(--carousel-gap-angle))));
+
+    width: var(--carousel-card-width);
+
+    // 1 for the visible cards, 0 for the waiting ones.
+    opacity: clamp(0, calc(var(--edge) - max(var(--offset), -1 * var(--offset))), 1);
+
+    transition: opacity 0.3s ease;
+  }
+
+  &__card {
+    filter: drop-shadow(0 0.75rem 1rem rgb(0 0 0 / 18%));
+    transition: transform 0.35s ease;
+  }
+
+  &__slide:hover &__card,
+  &__slide:focus-within &__card {
+    transform: translateY(-1rem);
+  }
+
+  &__slide--active &__card {
+    filter: drop-shadow(var(--shadow-poster));
+  }
+
+  &__button {
+    cursor: pointer;
+
+    position: absolute;
+    z-index: 100;
+    bottom: calc(var(--carousel-drop) + var(--carousel-card-height) / 2);
+    transform: translateY(50%);
+
+    display: grid;
+    place-items: center;
+
+    width: 3.25rem;
+    height: 3.25rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+
+    color: var(--carousel-accent);
+
+    background-color: var(--color-bg);
+    box-shadow: 0 0.5rem 1.5rem rgb(from var(--color-text) r g b / 18%);
+
+    transition:
+      color 0.15s ease,
+      background-color 0.15s ease,
+      transform 0.15s ease;
+
+    &:hover {
+      transform: translateY(50%) scale(1.06);
+      color: var(--color-bg);
+      background-color: var(--carousel-accent);
+    }
+
+    &--previous {
+      left: var(--space-4);
+    }
+
+    &--next {
+      right: var(--space-4);
+    }
+
+    @include up('md') {
+      &--previous {
+        left: var(--space-8);
+      }
+
+      &--next {
+        right: var(--space-8);
+      }
+    }
+  }
+
+  &__icon {
+    width: 1.25rem;
+    height: 1.25rem;
+
+    fill: none;
+    stroke: currentcolor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2.5;
+  }
+
+  &__placeholder {
+    display: block;
+
+    border-radius: var(--radius);
+
+    background: linear-gradient(
+        100deg,
+        transparent 30%,
+        rgb(255 255 255 / 70%) 50%,
+        transparent 70%
+      )
+      var(--carousel-placeholder);
+    background-size: 200% 100%;
+
+    animation: carousel-shimmer 1.4s linear infinite;
+
+    &--card {
+      aspect-ratio: 1 / var(--carousel-card-ratio);
+    }
+
+    &--text {
+      width: 14rem;
+      max-width: 80%;
+      height: 1.75rem;
+    }
+
+    &--text-short {
+      width: 8rem;
+      height: 1rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &__placeholder {
+      animation: none;
+    }
+
+    &__slide:hover &__card,
+    &__slide:focus-within &__card {
+      transform: none;
+    }
+  }
+}
+
+@keyframes carousel-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+
+  to {
+    background-position: -100% 0;
+  }
+}

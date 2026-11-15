@@ -1,29 +1,38 @@
+// The category theme restyles this button only through the `--theme-button-*` custom properties
+// (themes/_categories.scss); the component itself never branches on the category.
 .wishlist-button {
   &__button {
     cursor: pointer;
 
-    padding: var(--space-3) var(--space-6);
-    border: 2px solid var(--color-accent);
-    border-radius: var(--radius);
+    padding: var(--space-3) var(--space-8);
+    border: 2px solid var(--theme-button-border);
+    border-radius: var(--theme-button-radius);
 
+    font-family: var(--theme-font-display);
+    font-size: var(--font-size-md);
     font-weight: 700;
-    color: var(--color-bg);
+    color: var(--theme-button-fg);
+    text-transform: var(--theme-button-transform);
+    letter-spacing: 0.04em;
 
-    background-color: var(--color-accent);
+    background-color: var(--theme-button-bg);
+    clip-path: var(--theme-button-clip);
 
     transition:
-      background-color 0.15s ease,
-      color 0.15s ease;
+      transform 0.2s ease,
+      box-shadow 0.2s ease,
+      background-color 0.2s ease,
+      color 0.2s ease;
 
-    &:hover,
-    &[aria-pressed='true'] {
-      color: var(--color-accent);
-      background-color: transparent;
+    &:hover {
+      transform: var(--theme-button-hover-transform);
+      box-shadow: var(--theme-button-hover-shadow);
     }
 
-    &:focus-visible {
-      outline: 2px solid var(--color-text);
-      outline-offset: 2px;
+    // On the list: the inverted version of the same button.
+    &[aria-pressed='true'] {
+      color: var(--theme-button-pressed-fg);
+      background-color: var(--theme-button-pressed-bg);
     }
 
     &--remove {

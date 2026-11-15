@@ -1,0 +1,199 @@
+@use 'sass:list';
+@use 'sass:map';
+@use 'sass:string';
+
+// Only custom properties are set here; components read them and never branch on the category.
+
+// Where the three glow blobs sit along the bottom edge at each gradient step. Moving them is half
+// of the "flow"; changing the colours is the other half. The number of steps must match
+// GRADIENT_STEPS in src/features/films/categories.ts.
+$blob-layouts: (
+  ((30% 100%), (75% 95%), (50% 110%)),
+  ((70% 100%), (25% 95%), (55% 110%)),
+  ((50% 100%), (85% 90%), (15% 105%)),
+  ((20% 100%), (60% 92%), (90% 105%))
+);
+$gradient-steps: list.length($blob-layouts);
+
+$display-fonts: (
+  'oswald': (
+    'Oswald',
+    'Arial Narrow',
+    sans-serif,
+  ),
+  'fredoka': (
+    'Fredoka',
+    'Trebuchet MS',
+    sans-serif,
+  ),
+  'cinzel': (
+    'Cinzel',
+    'Times New Roman',
+    serif,
+  ),
+  'base': (
+    'Inter Variable',
+    system-ui,
+    sans-serif,
+  ),
+);
+
+$themes: (
+  'default': (
+    'palette': (
+      #9db4ff,
+      #c7a8ff,
+      #8fe3d2,
+      #a8d4ff,
+    ),
+    'accent': #121317,
+    'font': 'base',
+    'display-weight': 700,
+    'display-transform': none,
+    'display-tracking': -0.01em,
+    'button-bg': #121317,
+    'button-fg': #fff,
+    'button-border': #121317,
+    'button-pressed-bg': #fff,
+    'button-pressed-fg': #121317,
+    'button-radius': 0.5rem,
+    'button-clip': none,
+    'button-transform': none,
+    'button-hover-transform': translateY(-1px),
+    'button-hover-shadow': 0 0.5rem 1rem rgb(18 19 23 / 25%),
+  ),
+  'action': (
+    'palette': (
+      #ff5a1f,
+      #ff2a2a,
+      #ff9500,
+      #e8361f,
+    ),
+    'accent': #e8361f,
+    'font': 'oswald',
+    'display-weight': 700,
+    'display-transform': uppercase,
+    'display-tracking': 0.02em,
+    'button-bg': #e8361f,
+    'button-fg': #fff,
+    'button-border': #e8361f,
+    'button-pressed-bg': #fff,
+    'button-pressed-fg': #e8361f,
+    'button-radius': 0,
+    'button-clip': polygon(0.75rem 0, 100% 0, calc(100% - 0.75rem) 100%, 0 100%),
+    'button-transform': uppercase,
+    'button-hover-transform': translateX(0.25rem),
+    'button-hover-shadow': none,
+  ),
+  'comedy': (
+    'palette': (
+      #ffd60a,
+      #2ee6c8,
+      #ffe45c,
+      #4cc9ff,
+    ),
+    'accent': #ff3d8f,
+    'font': 'fredoka',
+    'display-weight': 600,
+    'display-transform': none,
+    'display-tracking': 0,
+    'button-bg': #ff3d8f,
+    'button-fg': #fff,
+    'button-border': #ff3d8f,
+    'button-pressed-bg': #fff,
+    'button-pressed-fg': #ff3d8f,
+    'button-radius': 999px,
+    'button-clip': none,
+    'button-transform': none,
+    'button-hover-transform': rotate(-3deg) scale(1.06),
+    'button-hover-shadow': 0 0.5rem 1.25rem rgb(255 61 143 / 40%),
+  ),
+  'horror': (
+    'palette': (
+      #6d28d9,
+      #1e1b4b,
+      #9f1239,
+      #4c1d95,
+    ),
+    'accent': #b3123a,
+    'font': 'cinzel',
+    'display-weight': 700,
+    'display-transform': uppercase,
+    'display-tracking': 0.08em,
+    'button-bg': transparent,
+    'button-fg': #b3123a,
+    'button-border': #b3123a,
+    'button-pressed-bg': #b3123a,
+    'button-pressed-fg': #fff,
+    'button-radius': 2px,
+    'button-clip': none,
+    'button-transform': uppercase,
+    'button-hover-transform': none,
+    'button-hover-shadow': 0 0 1.5rem rgb(179 18 58 / 55%),
+  ),
+);
+
+// Registered so the browser can interpolate them: that is what makes the glow flow, both when a
+// carousel moves (next step) and when the page scrolls to the next category.
+@each $name in ('gradient-1', 'gradient-2', 'gradient-3') {
+  @property --#{$name} {
+    inherits: true;
+    initial-value: transparent;
+    syntax: '<color>';
+  }
+}
+
+@each $name in ('blob-1-x', 'blob-1-y', 'blob-2-x', 'blob-2-y', 'blob-3-x', 'blob-3-y') {
+  @property --#{$name} {
+    inherits: true;
+    initial-value: 50%;
+    syntax: '<percentage>';
+  }
+}
+
+@mixin gradient-step($palette, $step) {
+  $count: list.length($palette);
+
+  @for $blob from 1 through 3 {
+    $position: list.nth(list.nth($blob-layouts, $step + 1), $blob);
+
+    // Step s uses colours s, s+1, s+2 of the palette (1-based in Sass), wrapping around.
+    --gradient-#{$blob}: #{list.nth($palette, ($step + $blob - 1) % $count + 1)};
+    --blob-#{$blob}-x: #{list.nth($position, 1)};
+    --blob-#{$blob}-y: #{list.nth($position, 2)};
+  }
+}
+
+@mixin theme($theme) {
+  --theme-accent: #{map.get($theme, 'accent')};
+  --theme-font-display: #{map.get($display-fonts, map.get($theme, 'font'))};
+  --theme-display-weight: #{map.get($theme, 'display-weight')};
+  --theme-display-transform: #{map.get($theme, 'display-transform')};
+  --theme-display-tracking: #{map.get($theme, 'display-tracking')};
+
+  @each $name, $value in $theme {
+    @if string.index($name, 'button-') == 1 {
+      --theme-#{$name}: #{$value};
+    }
+  }
+
+  @include gradient-step(map.get($theme, 'palette'), 0);
+}
+
+// The default look (a film without a category) is inherited from the root; an element with
+// `data-category` overrides it for everything inside it (a homepage panel, the glow, a film page).
+:root {
+  @include theme(map.get($themes, 'default'));
+}
+
+@each $category, $theme in map.remove($themes, 'default') {
+  [data-category='#{$category}'] {
+    @include theme($theme);
+  }
+
+  @for $step from 1 to $gradient-steps {
+    [data-category='#{$category}'][data-gradient-step='#{$step}'] {
+      @include gradient-step(map.get($theme, 'palette'), $step);
+    }
+  }
+}

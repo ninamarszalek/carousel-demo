@@ -178,6 +178,8 @@ export default defineConfig(
     extends: [vitest.configs.recommended],
     rules: {
       'vitest/consistent-test-it': ['error', { fn: 'it' }],
+      // Helpers named `expect…` (e.g. `expectCaption`) contain assertions.
+      'vitest/expect-expect': ['error', { assertFunctionNames: ['expect', 'expect*'] }],
       'vitest/no-focused-tests': 'error',
       'vitest/prefer-strict-equal': 'off',
     },

@@ -1,0 +1,1 @@
+export { FilmCarousel } from './FilmCarousel';

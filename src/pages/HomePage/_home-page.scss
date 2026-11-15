@@ -1,31 +1,126 @@
+@use '../../styles/abstracts' as *;
+
+// Scrolling snaps from one category panel to the next, so a genre is never left cut in half.
+// Only on screens tall enough for a whole panel; on very short ones the page scrolls freely.
+@media (height >= 35rem) {
+  :root:has(.home-page) {
+    scroll-padding-top: var(--header-height);
+    scroll-snap-type: y mandatory;
+  }
+}
+
 .home-page {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-8);
+  // The glows sit behind the panels, but in front of the page background.
+  isolation: isolate;
 
-  &__title {
-    margin-bottom: var(--space-2);
-    font-size: var(--font-size-xl);
+  // Landscape screens: one light for the whole page, rising from the bottom of the screen. It
+  // takes the colours of the category on screen; because the colours are registered properties,
+  // they flow from one category to the next while scrolling, and from film to film while sliding.
+  &__glow {
+    pointer-events: none;
+    position: fixed;
+    z-index: -1;
+    inset: 0;
+
+    @include category-glow;
+
+    @media (orientation: portrait) {
+      display: none;
+    }
   }
 
-  &__lead {
-    color: var(--color-text-muted);
-  }
+  &__panel {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
 
-  &__category {
+    isolation: isolate;
+    position: relative;
+
+    // Clipped, so a neighbouring panel waiting lower (see below) never shows in this one.
+    overflow: clip;
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
+
+    // Landscape: exactly one screen under the header, the carousel docked to its bottom.
+    @media (orientation: landscape) {
+      min-height: calc(100svh - var(--header-height));
+    }
+
+    // Portrait (phones, tablets): the width limits the cards, so a full-height panel would leave
+    // an empty screen above the title. A panel is as tall as its content, with its own glow and a
+    // white gap before the next genre.
+    @media (orientation: portrait) {
+      padding-bottom: var(--space-12);
+    }
   }
 
-  &__category-title {
-    font-size: var(--font-size-lg);
+  // Portrait screens: each panel's own light, centred behind the lower half of its cards and
+  // faded out at the top and the bottom, so it never reaches the next genre.
+  &__panel-glow {
+    display: none;
+
+    @media (orientation: portrait) {
+      pointer-events: none;
+
+      position: absolute;
+      z-index: -1;
+      right: 0;
+      bottom: 0;
+      left: 0;
+
+      display: block;
+
+      height: 85%;
+
+      mask-image: linear-gradient(to bottom, transparent, #000 30%, #000 70%, transparent);
+
+      @include category-glow(65%);
+    }
+  }
+
+  // The title, the caption and the cards stay together at the bottom of the panel; any spare
+  // height goes above them, never between the title and the cards.
+  &__panel-inner {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: var(--space-2);
+    justify-content: flex-end;
+
+    padding-top: var(--space-6);
+
+    transition:
+      opacity 0.4s ease,
+      transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  &__panel-title {
+    @include display-type;
+
+    font-size: var(--font-size-sm);
+    color: var(--theme-accent);
+    text-align: center;
+    letter-spacing: 0.3em;
   }
 
   &__error {
+    margin-block: var(--space-6);
     padding: var(--space-4);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius);
-    color: var(--color-text-muted);
-    background-color: var(--color-surface);
+
+    color: var(--color-text);
+
+    background-color: var(--color-bg);
+  }
+
+  // Landscape: the panels around the one on screen wait a little lower and fainter, and rise into
+  // place as they scroll in. Before the page knows what is on screen (no `data-state`), and on
+  // portrait screens, where several panels are visible at once, all are shown as they are.
+  @media (orientation: landscape) {
+    &__panel[data-state='inactive'] &__panel-inner {
+      transform: translateY(3rem) scale(0.98);
+      opacity: 0.2;
+    }
   }
 }
