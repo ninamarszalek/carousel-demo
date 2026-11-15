@@ -13,7 +13,7 @@
 
     &:focus-visible {
       border-radius: var(--radius);
-      outline: 2px solid var(--color-accent);
+      outline: 2px solid var(--color-focus);
       outline-offset: 4px;
     }
   }
@@ -24,7 +24,7 @@
   }
 
   &__link:hover &__title {
-    color: var(--color-accent);
+    color: var(--theme-accent);
   }
 
   &__meta {
