@@ -1,0 +1,19 @@
+@use 'sass:map';
+
+$breakpoints: (
+  'sm': 36rem,
+  'md': 48rem,
+  'lg': 64rem,
+  'xl': 80rem,
+);
+
+// Mobile-first media query: styles apply from the given breakpoint up.
+@mixin up($name) {
+  @if not map.has-key($breakpoints, $name) {
+    @error 'Unknown breakpoint "#{$name}". Available: #{map.keys($breakpoints)}.';
+  }
+
+  @media (width >= map.get($breakpoints, $name)) {
+    @content;
+  }
+}

@@ -1,0 +1,37 @@
+// Design tokens: the single source of truth for colors, spacing and type.
+// They are emitted as CSS custom properties in base/_root.scss; components use the custom
+// properties, so category themes can override them at runtime.
+
+$colors: (
+  'bg': #0f1115,
+  'surface': #1a1d24,
+  'text': #f2f4f8,
+  'text-muted': #a3a9b7,
+  'accent': #ff6b3d,
+);
+
+$spacing: (
+  '1': 0.25rem,
+  '2': 0.5rem,
+  '3': 0.75rem,
+  '4': 1rem,
+  '6': 1.5rem,
+  '8': 2rem,
+  '12': 3rem,
+);
+
+$font-sizes: (
+  'sm': 0.875rem,
+  'md': 1rem,
+  'lg': 1.25rem,
+  'xl': 2rem,
+);
+
+$font-family-base:
+  system-ui,
+  -apple-system,
+  'Segoe UI',
+  roboto,
+  sans-serif;
+$radius: 0.5rem;
+$content-max-width: 80rem;

@@ -1,0 +1,36 @@
+// Minimal modern reset.
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+img,
+picture,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important; // stylelint-disable-line declaration-no-important
+    transition-duration: 0.01ms !important; // stylelint-disable-line declaration-no-important
+    animation-duration: 0.01ms !important; // stylelint-disable-line declaration-no-important
+    animation-iteration-count: 1 !important; // stylelint-disable-line declaration-no-important
+  }
+}

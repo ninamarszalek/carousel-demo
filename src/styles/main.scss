@@ -1,0 +1,7 @@
+// Global stylesheet entry, linked from index.html.
+// Order matters: base → layout. Abstracts are @use'd by the partials that need them.
+// Component styles live next to their components.
+@use 'base/root';
+@use 'base/reset';
+@use 'base/typography';
+@use 'layout/app';

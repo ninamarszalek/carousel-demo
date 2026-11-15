@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      # Placeholder: the server only needs a non-empty value to start. It is also used below to
+      # verify that server-only secrets never end up in the client bundle.
+      TMDB_ACCESS_TOKEN: ci-placeholder-token-must-not-leak
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Lint (TypeScript)
+        run: npm run lint
+
+      - name: Lint (styles)
+        run: npm run lint:styles
+
+      - name: Formatting
+        run: npm run format:check
+
+      - name: Unit, component, SSR and server tests
+        run: npm run test:coverage
+
+      - name: Build
+        run: npm run build
+
+      - name: Server secrets are not in the client bundle
+        run: |
+          if grep -rq "$TMDB_ACCESS_TOKEN" dist/client; then
+            echo "::error::TMDB_ACCESS_TOKEN found in dist/client"
+            exit 1
+          fi
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E tests
+        run: npx playwright test
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 7
