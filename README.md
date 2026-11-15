@@ -34,6 +34,8 @@ You also need a **TMDB API Read Access Token**. It is free:
 
 ## Getting started
 
+For a detailed walkthrough (every step explained, offline mode without a TMDB token, deployment, and more troubleshooting), see [`docs/running-the-project.md`](docs/running-the-project.md).
+
 ```bash
 # 1. Clone the repository and open the folder
 git clone <repository-url> carousel-demo
